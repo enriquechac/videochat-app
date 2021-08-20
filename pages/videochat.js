@@ -20,7 +20,8 @@ function room() {
 
     //Conexion al API mediante Socket.IO
     const io = require("socket.io-client");
-    const socket = io("http://localhost:3030");
+    //const socket = io("http://localhost:3030");
+    const socket = io("https://videochat-app-api.herokuapp.com/");
 
     // Variables
 
