@@ -48,7 +48,7 @@ function room() {
         frameRate: { ideal: 30, max: 60 },
         aspectRatio: { ideal: 1.7777777778 },
     },
-    audio: false,
+    audio: true,
     /*
         'audio': {
             sampleSize: 16,
@@ -102,6 +102,10 @@ function room() {
         console.log('Se desconecto user con id:', userID)
         var elem = document.getElementById("videoContainer-"+userID);
         elem.remove();
+        console.log(typeof connections);
+        connections[userID]=null;
+        delete connections[userID];
+        changeVideoWidth()
     })
 
     // Al recibir una oferta de otro usuario en llamada
@@ -192,15 +196,22 @@ function room() {
 
     function setRemoteStream(event, userID) {
         
-        let newVideoUser= document.createElement('div');
-        console.log("SEASDAWD ", userID);
-        newVideoUser.setAttribute("id", "videoContainer-"+userID);
-        newVideoUser.classList.add('flex','justify-center', 'w-[825px]', 'h-[464px]', 'bg-dark-light', 'rounded-xl', 'shadow-md', 'overflow-hidden');
-        newVideoUser.innerHTML = '<video id="remoteVideo-'+userID+'" autoPlay playsInline></video> </div>';
-        videoContainer.insertBefore(newVideoUser, videoContainer.firstChild)        
         let remoteVideoComponent  = document.getElementById('remoteVideo-'+userID);
-        remoteVideoComponent.srcObject = event.streams[0]
-        remoteStream = event.stream
+        if(remoteVideoComponent){
+            console.log("EXISTE")
+        }else{
+            let newVideoUser= document.createElement('div');
+            console.log("SEASDAWD ", userID);
+            newVideoUser.setAttribute("id", "videoContainer-"+userID);
+            //newVideoUser.classList.add('flex','justify-center', 'w-[825px]', 'h-[464px]', 'bg-dark-light', 'rounded-xl', 'shadow-md', 'overflow-hidden',);
+            newVideoUser.classList.add('flex', 'justify-center', 'bg-dark-light', 'rounded-xl', 'shadow-md', 'overflow-hidden', 'mx-2');
+            newVideoUser.innerHTML = '<video id="remoteVideo-'+userID+'" autoPlay playsInline></video> </div>';
+            videoContainer.insertBefore(newVideoUser, videoContainer.firstChild)        
+            let remoteVideoComponent  = document.getElementById('remoteVideo-'+userID);
+            remoteVideoComponent.srcObject = event.streams[0]
+            remoteStream = event.stream
+            changeVideoWidth();
+        }
     }
 
     // Funcion para crear una nueva oferta
@@ -247,13 +258,47 @@ function room() {
     }, [])
 
 
+
+    const videoBotonClic = () => {
+        console.log("Boton Video Clic")
+    }
+    
+
+
+    var videoClass = "flex justify-center bg-dark-light rounded-xl shadow-md overflow-hidden mx-2 "
+    var maxWidth = ""
+    
+    const changeVideoWidth = () => {
+        
+        let width = 'w-[925px]';
+        let x = Object.entries(connections).length;
+        if(x === 1){
+            width = 'w-[800px]'
+        } else if (x===2){
+            width = 'w-[750px]'
+        } else if (x===3){
+            width = 'w-[750px]'
+        } else if (x>=4){
+            width = 'w-[500px]'
+        }
+        console.log(width)
+        document.getElementById('localVideo').className=width;
+
+        Object.entries(connections).forEach(([key, value]) => {
+            if(document.getElementById('remoteVideo-'+key)){
+                document.getElementById('remoteVideo-'+key).className=width;
+            }
+        });
+    }
+
+
     return (
 
         <>
             <div className="flex flex-col bg-dark min-h-screen">
                 <div className="flex flex-grow flex-wrap justify-evenly items-center" id="video-container">
-                    <div className="flex justify-center w-[825px] h-[464px] bg-dark-light rounded-xl shadow-md overflow-hidden">
-                        <video id="localVideo" autoPlay playsInline controls={false}></video>
+                    <div className={videoClass}>
+                        <video className="w-[925px]" id="localVideo" autoPlay playsInline controls={false} muted></video>
                     </div>
 
                     {/* <div className="flex justify-center w-[825px] h-[464px] bg-dark-light rounded-xl shadow-md overflow-hidden">
@@ -262,7 +307,7 @@ function room() {
                 </div>
                 <div className="flex mb-12 justify-center items-center">
                     <div className="flex w-72 justify-around">
-                        <div className="flex justify-center items-center bg-primary w-14 h-14 rounded-full cursor-pointer hover:opacity-70 active:scale-90 transition ease-out">
+                        <div onClick={videoBotonClic} className="flex justify-center items-center bg-primary w-14 h-14 rounded-full cursor-pointer hover:opacity-70 active:scale-90 transition ease-out">
                             <VideoCameraIcon className="font-light w-8"/>
                         </div>
                         <div className="flex justify-center items-center bg-primary w-14 h-14 rounded-full cursor-pointer hover:opacity-70 active:scale-90 transition ease-out">
